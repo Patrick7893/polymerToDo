@@ -1,0 +1,201 @@
+<link rel="import" href="bower_components/polymer/polymer.html">
+
+<link rel="import" href="bower_components/paper-header-panel/paper-header-panel.html">
+<link rel="import" href="bower_components/paper-toolbar/paper-toolbar.html">
+<link rel="import" href="bower_components/paper-input/paper-input.html">
+<link rel="import" href="bower_components/paper-checkbox/paper-checkbox.html">
+<link rel="import" href="bower_components/paper-button/paper-button.html">
+<link rel="import" href="bower_components/paper-item/paper-item.html">
+<link rel="import" href="bower_components/paper-listbox/paper-listbox.html">
+<link rel="import" href="bower_components/paper-date-picker/paper-date-picker.html">
+<link rel="import" href="bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="bower_components/paper-input/paper-textarea.html">
+<link rel="import" href="bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="bower_components/app-pouchdb/app-pouchdb-document.html">
+<link rel="import" href="bower_components/app-pouchdb/app-pouchdb-sync.html">
+<link rel="import" href="bower_components/app-pouchdb/app-pouchdb-query.html">
+
+<dom-module id="task-list">
+
+  <template>
+
+    <style is="new_task_layout_style">
+      .tasks_layout {
+        margin-top: 10px;
+          @apply(--layout-horizontal);
+      }
+      .task_list_layout {
+          @apply(--layout-flex-2);
+      }
+      .task_description_layout {
+          @apply(--layout-flex-2);
+      }
+      .new_task_layout {
+        padding: 20px;
+        background: #E8EAF6;
+        @apply(--layout-horizontal);
+      }
+      .flex_input {
+        @apply(--layout-flex);
+        margin-right: 20px;
+      }
+      .task_name_label {
+        @apply(--layout-flex);
+        padding-bottom: 15px;
+        --paper-input-container-underline: {
+          display: none;
+        };
+      }
+      .main-dropdown{
+      --paper-input-container-label: {
+        color: #FFF;
+      };
+      --paper-input-container-input: {
+        color: #FFF;
+      }
+      --paper-input-container-underline: {
+        display: none;
+      };
+    }
+
+    </style>
+
+    <!-- <app-pouchdb-query
+        id="query"
+        db-name="tasks"
+        selector="_id $gt 0"
+        fields='["_id", "name", "isCompleted", "description"]'
+        sort='["_id"]'
+        data="{{tasks}}">
+    </app-pouchdb-query> -->
+
+    <app-pouchdb-document
+        id="tasksId"
+        db-name="tasks"
+        doc-id="polymerToDo"
+        data="{{tasks}}">
+    </app-pouchdb-document>
+
+    <app-pouchdb-sync
+      src="tasks"
+      target="http://127.0.0.1:5984/tasks"
+      bidirectional>
+    </app-pouchdb-sync>
+
+    <paper-toolbar>
+      <paper-dropdown-menu class="main-dropdown" on-iron-select="modeSelected">
+        <paper-listbox class="dropdown-content" selected="0">
+          <paper-item>All Tasks</paper-item>
+          <paper-item>Uncompleted</paper-item>
+          <paper-item>Completed</paper-item>
+        </paper-listbox>
+      </paper-dropdown-menu>
+    </paper-toolbar>
+
+    <div class="new_task_layout">
+      <paper-input class="flex_input" value={{newTaskName}} label="New Task" on-keydown="checkForEnter"></paper-input>
+    </div>
+
+    <div class="tasks_layout">
+      <div class="task_list_layout">
+        <paper-listbox id="tasksListBox" on-iron-select="taskSelected" selected="{{curtask}}">
+          <template is='dom-repeat' items='{{tasksToDisplay}}'>
+            <paper-item>
+              <paper-checkbox checked='{{item.isCompleted}}'></paper-checkbox>
+              <paper-input class="task_name_label" value={{item.name}}></paper-input>
+              <paper-icon-button on-click="deleteTask" icon="delete"></paper-icon-button>
+            </paper-item>
+          </template>
+        </paper-listbox>
+      </div>
+      <div class="task_description_layout">
+        <paper-textarea value="{{curtask.description}}" label="Description:"></paper-textarea>
+      </div>
+    </div>
+
+
+  </template>
+  <script>
+    Polymer({
+     is: "task-list",
+     ready: function () {
+       this.tasks = [
+        {
+          name: "Task 1",
+          isCompleted: false,
+          description: "desription 1"
+        },
+        {
+          name: "Task 2",
+          isCompleted: false,
+          description: "description 2"
+        },
+        {
+          name: "Task 3",
+          isCompleted: false,
+          description: "description 3"
+        }
+      ]
+       this.tasksToDisplay = this.tasks;
+       if (this.tasks.length > 0) {
+          this.curtask = this.tasks[0];
+       }
+       var db = new PouchDB('http://127.0.0.1:5984/tasks');
+       db.info().then(function (info) {
+         console.log(info);
+       })
+     },
+     checkForEnter: function (e) {
+      if (e.keyCode === 13) {
+          var newTask = {name: this.newTaskName, isCompleted: false}
+          this.push('tasksToDisplay', newTask)
+          this.curtask = this.tasks.last;
+          this.newTaskName = ""
+      }
+    },
+    deleteTask: function(e) {
+       var index = this.tasksToDisplay.indexOf(e.model.item);
+       this.splice('tasksToDisplay', index, 1);
+    },
+    taskSelected: function(e) {
+      this.curtask = this.tasks[e.target.selected];
+    },
+    modeSelected: function(e) {
+      var mode = e.target.selected;
+      if (mode == 0) {
+          this.tasksToDisplay = this.tasks;
+          if (this.tasksToDisplay.length > 0) {
+            this.curtask = this.tasksToDisplay[0];
+          }
+          else {
+            this.curtask = null;
+          }
+      }
+      else if (mode == 1) {
+        this.tasksToDisplay = [];
+        this.filterTasks(false)
+      }
+      else if (mode == 2) {
+        this.tasksToDisplay = [];
+        this.filterTasks(true)
+      }
+    },
+    filterTasks: function(mode) {
+      for (var i = 0; i < this.tasks.length; i++) {
+        if (this.tasks[i].isCompleted == mode) {
+          this.push('tasksToDisplay', this.tasks[i]);
+        }
+      }
+      if (this.tasksToDisplay.length > 0) {
+        this.curtask = this.tasksToDisplay[0];
+      }
+      else {
+        this.curtask = null;
+      }
+    }
+
+   });
+  </script>
+</dom-module>
