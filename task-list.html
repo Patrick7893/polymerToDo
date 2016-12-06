@@ -16,6 +16,7 @@
 <link rel="import" href="bower_components/app-pouchdb/app-pouchdb-document.html">
 <link rel="import" href="bower_components/app-pouchdb/app-pouchdb-sync.html">
 <link rel="import" href="bower_components/app-pouchdb/app-pouchdb-query.html">
+<link rel="import" href="bower_components/app-pouchdb/app-pouchdb-database-behavior.html">
 
 <dom-module id="task-list">
 
@@ -62,19 +63,19 @@
 
     </style>
 
-    <!-- <app-pouchdb-query
+    <app-pouchdb-query
         id="query"
         db-name="tasks"
         selector="_id $gt 0"
-        fields='["_id", "name", "isCompleted", "description"]'
+        fields='["_id", "tasks"]'
         sort='["_id"]'
         data="{{tasks}}">
-    </app-pouchdb-query> -->
+    </app-pouchdb-query>
 
     <app-pouchdb-document
-        id="tasksId"
         db-name="tasks"
-        doc-id="polymerToDo"
+        db="{{tasksDB}}"
+        doc-id="polymerToDoList"
         data="{{tasks}}">
     </app-pouchdb-document>
 
@@ -120,32 +121,19 @@
   <script>
     Polymer({
      is: "task-list",
+     behaviors: [
+       Polymer.AppPouchDBDatabaseBehavior
+     ],
      ready: function () {
-       this.tasks = [
-        {
-          name: "Task 1",
-          isCompleted: false,
-          description: "desription 1"
-        },
-        {
-          name: "Task 2",
-          isCompleted: false,
-          description: "description 2"
-        },
-        {
-          name: "Task 3",
-          isCompleted: false,
-          description: "description 3"
-        }
-      ]
+       this.tasksDB.get('polymerToDoList').then(function (doc) {
+         this.tasks = doc.tasks
+         console.log(this.tasks);
+       });
        this.tasksToDisplay = this.tasks;
        if (this.tasks.length > 0) {
           this.curtask = this.tasks[0];
        }
-       var db = new PouchDB('http://127.0.0.1:5984/tasks');
-       db.info().then(function (info) {
-         console.log(info);
-       })
+
      },
      checkForEnter: function (e) {
       if (e.keyCode === 13) {
@@ -153,6 +141,11 @@
           this.push('tasksToDisplay', newTask)
           this.curtask = this.tasks.last;
           this.newTaskName = ""
+          var doc = {
+            "_id" : this.tasks._id,
+            "tasks" : JSON.stringify(this.tasks)
+          }
+          this.tasksDB.put(doc)
       }
     },
     deleteTask: function(e) {
