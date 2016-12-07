@@ -17,6 +17,7 @@
 <link rel="import" href="bower_components/app-pouchdb/app-pouchdb-sync.html">
 <link rel="import" href="bower_components/app-pouchdb/app-pouchdb-query.html">
 <link rel="import" href="bower_components/app-pouchdb/app-pouchdb-database-behavior.html">
+<link rel="import" href="bower_components/app-pouchdb/app-pouchdb-conflict-resolution.html">
 
 <dom-module id="task-list">
 
@@ -49,17 +50,17 @@
           display: none;
         };
       }
-      .main-dropdown{
-      --paper-input-container-label: {
-        color: #FFF;
-      };
-      --paper-input-container-input: {
-        color: #FFF;
+      .main-dropdown {
+        --paper-input-container-label: {
+          color: #FFF;
+        };
+        --paper-input-container-input: {
+          color: #FFF;
+        };
+        --paper-input-container-underline: {
+          display: none;
+        };
       }
-      --paper-input-container-underline: {
-        display: none;
-      };
-    }
 
     </style>
 
@@ -72,11 +73,16 @@
         data="{{tasks}}">
     </app-pouchdb-query>
 
+    <app-pouchdb-confict-resolution
+        strategy="lastWriteWins">
+    </app-pouchdb-conflict-resolution>
+
     <app-pouchdb-document
-        db-name="tasks"
+        db-name="http://127.0.0.1:5984/tasks"
         db="{{tasksDB}}"
         doc-id="polymerToDoList"
-        data="{{tasks}}">
+        data="{{tasks}}"
+        upsert="true">
     </app-pouchdb-document>
 
     <app-pouchdb-sync
@@ -102,7 +108,7 @@
     <div class="tasks_layout">
       <div class="task_list_layout">
         <paper-listbox id="tasksListBox" on-iron-select="taskSelected" selected="{{curtask}}">
-          <template is='dom-repeat' items='{{tasksToDisplay}}'>
+          <template is='dom-repeat' items='{{tasks.tasks}}'>
             <paper-item>
               <paper-checkbox checked='{{item.isCompleted}}'></paper-checkbox>
               <paper-input class="task_name_label" value={{item.name}}></paper-input>
@@ -125,35 +131,42 @@
        Polymer.AppPouchDBDatabaseBehavior
      ],
      ready: function () {
-       this.tasksDB.get('polymerToDoList').then(function (doc) {
-         this.tasks = doc.tasks
-         console.log(this.tasks);
+       console.log(this.tasks);
+       var tasksDBvar = this.tasksDB;
+       tasksDBvar.get('polymerToDoList', function (error, doc) {
+         if (error) {
+           tasksDBvar.put({
+             _id : "polymerToDoList",
+             tasks : []
+           }).then(function (response) {
+            console.log("Success", response)
+          })
+         }
        });
+       console.log(this.tasks);
+
+
        this.tasksToDisplay = this.tasks;
        if (this.tasks.length > 0) {
           this.curtask = this.tasks[0];
        }
-
      },
      checkForEnter: function (e) {
       if (e.keyCode === 13) {
           var newTask = {name: this.newTaskName, isCompleted: false}
           this.push('tasksToDisplay', newTask)
+          //this.push('tasks', newTask)
           this.curtask = this.tasks.last;
           this.newTaskName = ""
-          var doc = {
-            "_id" : this.tasks._id,
-            "tasks" : JSON.stringify(this.tasks)
-          }
-          this.tasksDB.put(doc)
+          this.push('tasks.tasks', newTask)
       }
     },
     deleteTask: function(e) {
-       var index = this.tasksToDisplay.indexOf(e.model.item);
-       this.splice('tasksToDisplay', index, 1);
+       var index = this.tasks.tasks.indexOf(e.model.item);
+       this.splice('tasks.tasks', index, 1);
     },
     taskSelected: function(e) {
-      this.curtask = this.tasks[e.target.selected];
+      this.curtask = this.tasks.tasks[e.target.selected];
     },
     modeSelected: function(e) {
       var mode = e.target.selected;
