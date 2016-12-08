@@ -68,7 +68,7 @@
         id="query"
         db-name="tasks"
         selector="_id $gt 0"
-        fields='["_id", "tasks"]'
+        fields='["_id", "name", "isCompleted", "description"]'
         sort='["_id"]'
         data="{{tasks}}">
     </app-pouchdb-query>
@@ -78,16 +78,16 @@
     </app-pouchdb-conflict-resolution>
 
     <app-pouchdb-document
-        db-name="http://127.0.0.1:5984/tasks"
-        db="{{tasksDB}}"
-        doc-id="polymerToDoList"
-        data="{{tasks}}"
-        upsert="true">
+        id="document"
+        doc-id = "[[curtaskID]]"
+        db-name="tasks"
+        db={{tasksDB}}
+        data="{{curtask}}">
     </app-pouchdb-document>
 
     <app-pouchdb-sync
-      src="tasks"
-      target="http://127.0.0.1:5984/tasks"
+      src="http://127.0.0.1:5984/tasks"
+      target="tasks"
       bidirectional>
     </app-pouchdb-sync>
 
@@ -102,22 +102,22 @@
     </paper-toolbar>
 
     <div class="new_task_layout">
-      <paper-input class="flex_input" value={{newTaskName}} label="New Task" on-keydown="checkForEnter"></paper-input>
+      <paper-input class="flex_input" value={{newTaskName}} label="New Task" on-keydown="checkForEnterNewTask"></paper-input>
     </div>
 
     <div class="tasks_layout">
       <div class="task_list_layout">
-        <paper-listbox id="tasksListBox" on-iron-select="taskSelected" selected="{{curtask}}">
-          <template is='dom-repeat' items='{{tasks.tasks}}'>
-            <paper-item>
+        <paper-listbox id="tasksListBox">
+          <template is='dom-repeat' items='{{tasks}}'>
+            <paper-item on-click="taskSelected">
               <paper-checkbox checked='{{item.isCompleted}}'></paper-checkbox>
-              <paper-input class="task_name_label" value={{item.name}}></paper-input>
+              <paper-input class="task_name_label" value={{item.name}} on-keydown="checkForEnterTaskName"></paper-input>
               <paper-icon-button on-click="deleteTask" icon="delete"></paper-icon-button>
-            </paper-item>
+           </paper-item>
           </template>
         </paper-listbox>
-      </div>
-      <div class="task_description_layout">
+       </div>
+       <div class="task_description_layout">
         <paper-textarea value="{{curtask.description}}" label="Description:"></paper-textarea>
       </div>
     </div>
@@ -127,57 +127,46 @@
   <script>
     Polymer({
      is: "task-list",
-     behaviors: [
-       Polymer.AppPouchDBDatabaseBehavior
-     ],
      ready: function () {
-       console.log(this.tasks);
-       var tasksDBvar = this.tasksDB;
-       tasksDBvar.get('polymerToDoList', function (error, doc) {
-         if (error) {
-           tasksDBvar.put({
-             _id : "polymerToDoList",
-             tasks : []
-           }).then(function (response) {
-            console.log("Success", response)
-          })
-         }
-       });
-       console.log(this.tasks);
 
-
-       this.tasksToDisplay = this.tasks;
-       if (this.tasks.length > 0) {
-          this.curtask = this.tasks[0];
-       }
      },
-     checkForEnter: function (e) {
+     checkForEnterNewTask: function (e) {
       if (e.keyCode === 13) {
-          var newTask = {name: this.newTaskName, isCompleted: false}
-          this.push('tasksToDisplay', newTask)
-          //this.push('tasks', newTask)
-          this.curtask = this.tasks.last;
+          var newTask = {name: this.newTaskName, isCompleted: false, description: ""}
+          var that = this
+          this.curtaskID = null;
+          this.curtask = newTask
           this.newTaskName = ""
-          this.push('tasks.tasks', newTask)
+          if (this.$.document.isNew) {
+            this.$.document.save().then(function(){
+              that.$.document.reset();
+              that.$.query.refresh();
+            })
+          }
+      }
+    },
+    checkForEnterTaskName: function(e) {
+      if (e.keyCode == 13) {
+        this.curtask.name = e.model.item.name
+        console.log(this.curtask.name);
       }
     },
     deleteTask: function(e) {
-       var index = this.tasks.tasks.indexOf(e.model.item);
-       this.splice('tasks.tasks', index, 1);
+      this.curtaskID = e.model.item._id
+      this.$.document.transactionsComplete.then(function () {
+        this.set("curtask._deleted", true);
+        this.$.query.refresh()
+      }.bind(this))
     },
     taskSelected: function(e) {
-      this.curtask = this.tasks.tasks[e.target.selected];
+      this.curtaskID = e.model.item._id
+      console.log(this.curtaskID);
     },
+
     modeSelected: function(e) {
       var mode = e.target.selected;
       if (mode == 0) {
-          this.tasksToDisplay = this.tasks;
-          if (this.tasksToDisplay.length > 0) {
-            this.curtask = this.tasksToDisplay[0];
-          }
-          else {
-            this.curtask = null;
-          }
+
       }
       else if (mode == 1) {
         this.tasksToDisplay = [];
