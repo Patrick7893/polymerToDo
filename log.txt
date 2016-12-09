@@ -15960,3 +15960,34 @@
 [Thu, 08 Dec 2016 11:34:29 GMT] [info] [<0.000.0>] 127.0.0.1 - - GET /tasks/_changes?timeout=25000&style=all_docs&heartbeat=10000&since=432&limit=100 304
 [Thu, 08 Dec 2016 11:34:29 GMT] [info] [<0.000.0>] 127.0.0.1 - - GET /tasks/_local/FVDmD6B_0fmpQ5rL9TTjlQ%3D%3D? 304
 [Thu, 08 Dec 2016 11:34:49 GMT] [info] [<0.000.0>] 127.0.0.1 - - GET /tasks/_changes?timeout=25000&style=all_docs&feed=longpoll&heartbeat=10000&since=432&limit=100 200
+[Fri, 09 Dec 2016 11:03:43 GMT] [info] [<0.000.0>] pouchdb-server has started on http://127.0.0.1:5985/
+[Fri, 09 Dec 2016 11:03:43 GMT] [info] [<0.000.0>] navigate to http://127.0.0.1:5985/_utils for the Fauxton UI.
+[Fri, 09 Dec 2016 11:03:58 GMT] [info] [<0.000.0>] 127.0.0.1 - - GET /_utils 301
+[Fri, 09 Dec 2016 11:03:58 GMT] [info] [<0.000.0>] 127.0.0.1 - - GET /_utils/ 304
+[Fri, 09 Dec 2016 11:03:58 GMT] [info] [<0.000.0>] 127.0.0.1 - - GET /_utils/css/index-6688cd4426ead40b085270f8cb007530.css 304
+[Fri, 09 Dec 2016 11:03:58 GMT] [info] [<0.000.0>] 127.0.0.1 - - GET /_utils/js/require-34a7e370ea98389d118cc328682c0939.js 304
+[Fri, 09 Dec 2016 11:03:59 GMT] [info] [<0.000.0>] 127.0.0.1 - - GET /_session 304
+[Fri, 09 Dec 2016 11:03:59 GMT] [info] [<0.000.0>] 127.0.0.1 - - GET /_session 304
+[Fri, 09 Dec 2016 11:03:59 GMT] [info] [<0.000.0>] 127.0.0.1 - - GET / 304
+[Fri, 09 Dec 2016 11:03:59 GMT] [info] [<0.000.0>] 127.0.0.1 - - GET /_utils/img/pouchdb-site.png 304
+[Fri, 09 Dec 2016 11:03:59 GMT] [info] [<0.000.0>] 127.0.0.1 - - GET /_utils/fonts/fontawesome-webfont.woff?v=3.2.1 304
+[Fri, 09 Dec 2016 11:03:59 GMT] [info] [<0.000.0>] 127.0.0.1 - - GET /_utils/fonts/fauxtonicon.woff 304
+[Fri, 09 Dec 2016 11:03:59 GMT] [info] [<0.000.0>] 127.0.0.1 - - GET /_all_dbs?_=1481281439085 200
+[Fri, 09 Dec 2016 11:03:59 GMT] [info] [<0.000.0>] 127.0.0.1 - - GET /_utils/js/zeroclipboard/ZeroClipboard.swf?noCache=1481281439392 200
+[Fri, 09 Dec 2016 11:03:59 GMT] [info] [<0.000.0>] 127.0.0.1 - - GET /_replicator 200
+[Fri, 09 Dec 2016 11:03:59 GMT] [info] [<0.000.0>] 127.0.0.1 - - GET /_users 200
+[Fri, 09 Dec 2016 11:03:59 GMT] [info] [<0.000.0>] 127.0.0.1 - - GET /tasksv 200
+[Fri, 09 Dec 2016 11:03:59 GMT] [info] [<0.000.0>] 127.0.0.1 - - GET /tasksddd 200
+[Fri, 09 Dec 2016 11:03:59 GMT] [info] [<0.000.0>] 127.0.0.1 - - GET /todos 200
+[Fri, 09 Dec 2016 11:03:59 GMT] [info] [<0.000.0>] 127.0.0.1 - - GET /tasks 200
+[Fri, 09 Dec 2016 11:04:02 GMT] [info] [<0.000.0>] 127.0.0.1 - - GET /_users/_all_docs?startkey=%22_design%2F%22&endkey=%22_design0%22&include_docs=true&limit=501 200
+[Fri, 09 Dec 2016 11:04:02 GMT] [info] [<0.000.0>] 127.0.0.1 - - GET /_users/_all_docs?limit=21 200
+[Fri, 09 Dec 2016 11:04:02 GMT] [info] [<0.000.0>] 127.0.0.1 - - GET /_all_dbs 304
+[Fri, 09 Dec 2016 11:04:02 GMT] [info] [<0.000.0>] 127.0.0.1 - - GET /_users/_all_docs?startkey=%22_design%2F%22&endkey=%22_design0%22&include_docs=true&limit=501 304
+[Fri, 09 Dec 2016 11:04:16 GMT] [info] [<0.000.0>] 127.0.0.1 - - GET /_all_dbs?_=1481281439086 200
+[Fri, 09 Dec 2016 11:04:16 GMT] [info] [<0.000.0>] 127.0.0.1 - - GET /_replicator 304
+[Fri, 09 Dec 2016 11:04:16 GMT] [info] [<0.000.0>] 127.0.0.1 - - GET /_users 304
+[Fri, 09 Dec 2016 11:04:16 GMT] [info] [<0.000.0>] 127.0.0.1 - - GET /tasks 304
+[Fri, 09 Dec 2016 11:04:16 GMT] [info] [<0.000.0>] 127.0.0.1 - - GET /tasksddd 304
+[Fri, 09 Dec 2016 11:04:16 GMT] [info] [<0.000.0>] 127.0.0.1 - - GET /tasksv 304
+[Fri, 09 Dec 2016 11:04:16 GMT] [info] [<0.000.0>] 127.0.0.1 - - GET /todos 304
