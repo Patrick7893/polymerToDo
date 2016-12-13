@@ -18,7 +18,10 @@
 <link rel="import" href="bower_components/app-pouchdb/app-pouchdb-query.html">
 <link rel="import" href="bower_components/app-pouchdb/app-pouchdb-database-behavior.html">
 <link rel="import" href="bower_components/app-pouchdb/app-pouchdb-conflict-resolution.html">
+<link rel="import" href="bower_components/pouchdb-authentication/dist/pouchdb.authentication.min.js">
 <link rel="import" href="bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="bower_components/paper-toast/paper-toast.html">
 
 <dom-module id="task-list">
 
@@ -62,6 +65,9 @@
           display: none;
         };
       }
+      .login-input{
+        width: 450px;
+      }
 
     </style>
 
@@ -87,10 +93,32 @@
     </app-pouchdb-document>
 
     <app-pouchdb-sync
-      src="http://127.0.0.1:5984/tasks"
+      src="http://localhost:5984/tasks"
       target="tasks"
       bidirectional>
     </app-pouchdb-sync>
+
+    <!-- <iron-ajax
+      id="request"
+      url="http://localhost:5984/_session"
+      method='POST'
+      body="{"name": "root", "password": "relax"}"
+      on-error="handleError"
+      contentType="application/json"
+      handle-as="json"
+      on-response="handleResponse">
+    </iron-ajax> -->
+
+    <paper-dialog id="loginDialog" modal>
+      <paper-input class="login-input" label="Login" value={{username}}></paper-input>
+      <paper-input class="login-input" label="Password" value={{password}} on-keydown="checkForEnterLogin"></paper-input>
+      <div class="buttons">
+        <paper-button on-click="signUpClick">sign up</paper-button>
+        <paper-button on-click="loginClick" dialog-confirm autofocus>login</paper-button>
+      </div>
+    </paper-dialog>
+
+    <paper-toast id="toast" text="Wrong credentials"></paper-toast>
 
     <paper-toolbar>
       <paper-dropdown-menu class="main-dropdown" on-iron-select="modeSelected">
@@ -125,11 +153,19 @@
 
 
   </template>
+  <script type="text/javascript" src="bower_components/pouchdb-authentication/dist/pouchdb.authentication.min.js">
+  </script>
   <script>
     Polymer({
      is: "task-list",
      ready: function () {
-
+       var db = new PouchDB('http://localhost:5984/tasks', {skipSetup: true});
+       db.getSession(function (err, response) {
+         console.log(response);
+           if (!response.userCtx.name) {
+             this.$.loginDialog.open()
+           }
+       }.bind(this));
      },
      checkForEnterNewTask: function (e) {
       if (e.keyCode === 13) {
@@ -152,6 +188,11 @@
         this.$.document.save();
       }
     },
+    checkForEnterLogin: function(e) {
+      if (e.keyCode == 13) {
+          this.loginClick()
+      }
+    },
     taskSelected: function(e) {
       console.log("fewjfwe");
       this.curtaskID = e.model.item._id
@@ -170,34 +211,66 @@
         this.$.query.refresh()
       }.bind(this))
     },
-    // modeSelected: function(e) {
-    //   var mode = e.target.selected;
-    //   if (mode == 0) {
-    //
-    //   }
-    //   else if (mode == 1) {
-    //     this.tasksToDisplay = [];
-    //     this.filterTasks(false)
-    //   }
-    //   else if (mode == 2) {
-    //     this.tasksToDisplay = [];
-    //     this.filterTasks(true)
+    handleResponse: function(data) {
+      console.log(data.detail.xhr.status);
+      console.log(data.detail.response);
+    },
+    handleError: function(data) {
+      console.log(data.detail.error);
+    },
+    // listeners: {
+    //   'sync-error': "_syncError",
+    // },
+    // _syncError: function(e) {
+    //   if (e.detail.status == 401) {
+    //     this.$.loginDialog.open()
     //   }
     // },
-    // filterTasks: function(mode) {
-    //   for (var i = 0; i < this.tasks.length; i++) {
-    //     if (this.tasks[i].isCompleted == mode) {
-    //       this.push('tasksToDisplay', this.tasks[i]);
-    //     }
-    //   }
-    //   if (this.tasksToDisplay.length > 0) {
-    //     this.curtask = this.tasksToDisplay[0];
-    //   }
-    //   else {
-    //     this.curtask = null;
-    //   }
-    // }
+    signUpClick: function(e) {
+      window.location.href = "signup.html";
+    },
+    loginClick: function(e) {
+      var db = new PouchDB('http://localhost:5984/tasks', {skipSetup: true});
+      var user = {
+        name: this.username,
+        password: this.password
+      };
 
+      var ajaxOpts = {
+        ajax: {
+          headers: {
+            Authorization: 'Basic ' + window.btoa(user.name + ':' + user.password)
+          }
+        }
+      };
+
+      db.login(user.name, user.password, ajaxOpts, function(err, response) {
+        console.log(err);
+        console.log(response);
+        if (response) {
+          this.$.loginDialog.close()
+          window.location.reload()
+        }
+        if (err) {
+          this.$.toast.show()
+        }
+      }.bind(this));
+    },
+    modeSelected: function(e) {
+      var mode = e.target.selected;
+      if (mode == 0) {
+        this.$.query.selector = "_id $gt 0"
+        this.$.query.refresh()
+      }
+      else if (mode == 1) {
+        this.$.query.selector = "isCompleted $eq false"
+        this.$.query.refresh()
+      }
+      else if (mode == 2) {
+        this.$.query.selector = "isCompleted $eq true"
+        this.$.query.refresh()
+      }
+    },
    });
   </script>
 </dom-module>
