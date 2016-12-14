@@ -73,7 +73,7 @@
 
     <app-pouchdb-query
         id="query"
-        db-name="tasks"
+        db-name=[[tasksDB]]
         selector="_id $gt 0"
         fields='["_id", "name", "isCompleted", "description"]'
         sort='["_id"]'
@@ -87,14 +87,13 @@
     <app-pouchdb-document
         id="document"
         doc-id = "[[curtaskID]]"
-        db-name="tasks"
-        db={{tasksDB}}
+        db-name=[[tasksDB]]
         data="{{curtask}}">
     </app-pouchdb-document>
 
     <app-pouchdb-sync
-      src="http://localhost:5984/tasks"
-      target="tasks"
+      src=[[tasksDBremove]]
+      target=[[tasksDB]]
       bidirectional>
     </app-pouchdb-sync>
 
@@ -162,14 +161,24 @@
        var db = new PouchDB('http://localhost:5984/tasks', {skipSetup: true});
        db.getSession(function (err, response) {
          console.log(response);
-           if (!response.userCtx.name) {
-             this.$.loginDialog.open()
-           }
+         if (!response.userCtx.name) {
+           this.$.loginDialog.open()
+         }
+         else {
+           this.curusername = response.userCtx.name
+           this.tasksDB = "tasks-" + response.userCtx.name
+           this.tasksDBremove = "http://localhost:5984/" + this.tasksDB
+           console.log(this.tasksDBremove);
+           console.log(this.$.query.dbName);
+           this.$.query.refresh()
+           console.log(this.tasksDB);
+         }
        }.bind(this));
      },
      checkForEnterNewTask: function (e) {
       if (e.keyCode === 13) {
-          var newTask = {name: this.newTaskName, isCompleted: false, description: ""}
+          var newTask = {name: this.newTaskName, isCompleted: false, description: "", userNa: this.curusername}
+          console.log(newTask);
           var that = this
           this.curtaskID = null;
           this.curtask = newTask
