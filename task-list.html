@@ -211,13 +211,13 @@
         this.$.query.refresh()
       }.bind(this))
     },
-    handleResponse: function(data) {
-      console.log(data.detail.xhr.status);
-      console.log(data.detail.response);
-    },
-    handleError: function(data) {
-      console.log(data.detail.error);
-    },
+    // handleResponse: function(data) {
+    //   console.log(data.detail.xhr.status);
+    //   console.log(data.detail.response);
+    // },
+    // handleError: function(data) {
+    //   console.log(data.detail.error);
+    // },
     // listeners: {
     //   'sync-error': "_syncError",
     // },
@@ -227,24 +227,11 @@
     //   }
     // },
     signUpClick: function(e) {
-      window.location.href = "signup.html";
+      window.location.href = "sign-up.html";
     },
     loginClick: function(e) {
       var db = new PouchDB('http://localhost:5984/tasks', {skipSetup: true});
-      var user = {
-        name: this.username,
-        password: this.password
-      };
-
-      var ajaxOpts = {
-        ajax: {
-          headers: {
-            Authorization: 'Basic ' + window.btoa(user.name + ':' + user.password)
-          }
-        }
-      };
-
-      db.login(user.name, user.password, ajaxOpts, function(err, response) {
+      db.login(this.username, this.password, function(err, response) {
         console.log(err);
         console.log(response);
         if (response) {

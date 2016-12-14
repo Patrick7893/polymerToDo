@@ -4,6 +4,19 @@
 <link rel="import" href="bower_components/paper-button/paper-button.html">
 <link rel="import" href="bower_components/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="bower_components/paper-toolbar/paper-toolbar.html">
+<link rel="import" href="bower_components/pouchdb-authentication/dist/pouchdb.authentication.min.js">
+<link rel="import" href="bower_components/app-pouchdb/app-pouchdb-document.html">
+
+<html>
+  <head>
+    <script scr="bower_components/platform/platform.js"></script>
+    <script src="bower_components/webcomponentsjs/webcomponents-lite.js"></script>
+
+  </head>
+  <body>
+    <sign-up></sign-up>
+  </body>
+</html>
 
 <dom-module id="sign-up">
 
@@ -43,7 +56,7 @@
       if ((this.password.length > 0) && (this.username.length > 0)) {
         var username = this.username
         var password = this.password
-        db.signup(this.username, this.password, function (err, response) {
+        db.signup(username, password, function (err, response) {
           console.log(response);
           if (response) {
             db.login(username, password, function (err, response) {
