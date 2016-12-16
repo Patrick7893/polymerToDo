@@ -73,7 +73,7 @@
 
     <app-pouchdb-query
         id="query"
-        db-name=[[tasksDB]]
+        db-name=[[tasksDBlocal]]
         selector="_id $gt 0"
         fields='["_id", "name", "isCompleted", "description"]'
         sort='["_id"]'
@@ -87,13 +87,13 @@
     <app-pouchdb-document
         id="document"
         doc-id = "[[curtaskID]]"
-        db-name=[[tasksDB]]
+        db-name=[[tasksDBlocal]]
         data="{{curtask}}">
     </app-pouchdb-document>
 
     <app-pouchdb-sync
-      src=[[tasksDBremove]]
-      target=[[tasksDB]]
+      src=[[tasksDBremote]]
+      target=[[tasksDBlocal]]
       bidirectional>
     </app-pouchdb-sync>
 
@@ -166,12 +166,9 @@
          }
          else {
            this.curusername = response.userCtx.name
-           this.tasksDB = "tasks-" + response.userCtx.name
-           this.tasksDBremove = "http://localhost:5984/" + this.tasksDB
-           console.log(this.tasksDBremove);
-           console.log(this.$.query.dbName);
+           this.tasksDBlocal = "tasks-" + response.userCtx.name
+           this.tasksDBremote = "http://localhost:5984/" + this.tasksDBlocal
            this.$.query.refresh()
-           console.log(this.tasksDB);
          }
        }.bind(this));
      },
@@ -203,7 +200,6 @@
       }
     },
     taskSelected: function(e) {
-      console.log("fewjfwe");
       this.curtaskID = e.model.item._id
     },
     checkBoxChanged: function(e) {
