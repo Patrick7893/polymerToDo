@@ -22,6 +22,7 @@
 <link rel="import" href="bower_components/iron-ajax/iron-ajax.html">
 <link rel="import" href="bower_components/paper-dialog/paper-dialog.html">
 <link rel="import" href="bower_components/paper-toast/paper-toast.html">
+<link rel="import" href="bower_components/iron-localstorage/iron-localstorage.html">
 
 <dom-module id="task-list">
 
@@ -71,6 +72,12 @@
 
     </style>
 
+  <iron-localstorage name="tasks-localstorage"
+    value="{{curusername}}"
+    on-iron-localstorage-load="initialize"
+    on-iron-localstorage-load-empty="initializeEmptyStorage">
+  </iron-localstorage>
+
     <app-pouchdb-query
         id="query"
         db-name="tasks"
@@ -96,17 +103,6 @@
       target="tasks"
       bidirectional>
     </app-pouchdb-sync>
-
-    <!-- <iron-ajax
-      id="request"
-      url="http://localhost:5984/_session"
-      method='POST'
-      body="{"name": "root", "password": "relax"}"
-      on-error="handleError"
-      contentType="application/json"
-      handle-as="json"
-      on-response="handleResponse">
-    </iron-ajax> -->
 
     <paper-dialog id="loginDialog" modal>
       <paper-input class="login-input" label="Login" value={{username}}></paper-input>
@@ -157,7 +153,15 @@
   <script>
     Polymer({
      is: "task-list",
-     ready: function () {
+     initialize: function(e) {
+       if (navigator.onLine) {
+         this.getSession()
+       }
+     },
+     initializeEmptyStorage: function(e) {
+       this.getSession()
+     },
+     getSession: function() {
        var db = new PouchDB('http://localhost:5984/tasks', {skipSetup: true});
        db.getSession(function (err, response) {
          console.log(response);
@@ -168,16 +172,14 @@
            this.curusername = response.userCtx.name
            this.tasksDBlocal = "tasks-" + response.userCtx.name
            this.tasksDBremote = "http://localhost:5984/" + this.tasksDBlocal
-           console.log(this.tasksDBremote);
-           console.log(this.$.query.dbName);
-           this.$.query.refresh()
-           console.log(this.tasksDBlocal);
+           this.$.query.refresh();
          }
        }.bind(this));
      },
      checkForEnterNewTask: function (e) {
       if (e.keyCode === 13) {
-          var newTask = {name: this.newTaskName, isCompleted: false, description: "", userNa: this.curusername}
+        console.log("hui");
+          var newTask = {name: this.newTaskName, isCompleted: false, description: "", userName: this.curusername, type: "task"}
           console.log(newTask);
           var that = this
           this.curtaskID = null;

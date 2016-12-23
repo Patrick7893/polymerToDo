@@ -13,11 +13,10 @@ function processUser(doc, callback) {
         console.log("DB Create " + dbName);
         conn.createDBAsync(dbName).then(result => {
           console.log("replicating " + dbName);
-          return conn.createReplicationAsync(dbName, doc);
+          return conn.createReplicationFromTasksAsync(dbName, doc);
         })
         .then(result => {
-          console.log('reverse replication ' + dbName);
-          return conn.createReverseReplicationAsync(dbName);
+          return conn.createReplicationsAsync(dbName, doc);
         })
         .then(result => {
           console.log("_security request " + dbName);
@@ -25,6 +24,8 @@ function processUser(doc, callback) {
         })
         .then(result => {
           console.log("setup end" + dbName);
+        }).catch((error) => {
+          console.log(error);
         })
     }
     else {

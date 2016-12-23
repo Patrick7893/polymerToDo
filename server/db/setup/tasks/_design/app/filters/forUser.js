@@ -1,3 +1,5 @@
 function(doc, req) {
-    return !!doc.userName && doc.userName == req.query.userName;
+  if ((doc.userName == req.query.userName) || (doc._id == "_design/type")) {
+    return true
+  }
 }
