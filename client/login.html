@@ -1,0 +1,65 @@
+<link rel="import" href="bower_components/polymer/polymer.html">
+
+<link rel="import" href="bower_components/paper-input/paper-input.html">
+<link rel="import" href="bower_components/paper-button/paper-button.html">
+<link rel="import" href="bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="bower_components/paper-toolbar/paper-toolbar.html">
+<link rel="import" href="bower_components/pouchdb-authentication/dist/pouchdb.authentication.min.js">
+<link rel="import" href="bower_components/app-pouchdb/app-pouchdb-document.html">
+
+<html>
+  <head>
+    <script scr="bower_components/platform/platform.js"></script>
+    <script src="bower_components/webcomponentsjs/webcomponents-lite.js"></script>
+
+  </head>
+  <body>
+    <login-page></login-page>
+  </body>
+</html>
+
+<dom-module id="login-page">
+
+  <style is="custom-style" include="iron-flex">
+    .main-layout {
+      padding-top: 100px;
+      display: table;
+      margin: 0 auto;
+      width: 350px;
+    }
+    .sign-up-button {
+      @apply(--layout-self-end);
+    }
+  </style>
+
+  <template>
+    <paper-toolbar>
+     <div>Login</div>
+    </paper-toolbar>
+
+    <div class="main-layout">
+      <paper-input label="Login" value={{username}}></paper-input>
+      <paper-input label="Password" value={{password}}></paper-input>
+      <paper-button class="horizontal end-justified layout" style="margin-top: 30px;" on-click="loginClick">login</paper-button>
+    </div>
+
+
+  </template>
+  <script type="text/javascript" src="bower_components/pouchdb-authentication/dist/pouchdb.authentication.min.js">
+  </script>
+  <script>
+    Polymer({
+    is: "sign-up",
+    loginClick: function(e) {
+      var db = new PouchDB('http://localhost:5984/tasks', {skipSetup: true});
+      if ((this.password.length > 0) && (this.username.length > 0)) {
+        db.login(this.username, this.password, function (err, response) {
+          if (response) {
+            window.location.href = "index.html"
+          }
+        });
+    }
+
+   });
+  </script>
+</dom-module>

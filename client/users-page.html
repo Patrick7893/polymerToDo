@@ -1,0 +1,161 @@
+<link rel="import" href="bower_components/polymer/polymer.html">
+
+<link rel="import" href="bower_components/paper-header-panel/paper-header-panel.html">
+<link rel="import" href="bower_components/paper-toolbar/paper-toolbar.html">
+<link rel="import" href="bower_components/iron-list/iron-list.html">
+<link rel="import" href="bower_components/app-pouchdb/app-pouchdb-document.html">
+<link rel="import" href="bower_components/app-pouchdb/app-pouchdb-sync.html">
+<link rel="import" href="bower_components/app-pouchdb/app-pouchdb-query.html">
+<link rel="import" href="bower_components/app-pouchdb/app-pouchdb-database-behavior.html">
+<link rel="import" href="bower_components/app-pouchdb/app-pouchdb-conflict-resolution.html">
+<link rel="import" href="bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="bower_components/paper-fab/paper-fab.html">
+<link rel="import" href="bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="bower_components/paper-input/paper-input.html">
+<link rel="import" href="bower_components/paper-toast/paper-toast.html">
+
+<dom-module id="users-page">
+
+  <template>
+
+    <style is="users-page-style">
+      .users-title {
+        @apply(--layout-horizontal);
+        padding: 20px;
+        background-color: #3F51B5;
+      }
+      .name-title {
+         @apply(--layout-flex-2);
+         color: white
+      }
+      .item {
+        @apply(--layout-horizontal);
+        padding: 20px;
+        background-color: white;
+        border: 1px solid #ddd;
+        cursor: pointer;
+        margin-bottom: 10px;
+      }
+     .name {
+       @apply(--layout-flex-2)
+     }
+     .roles {
+       @apply(--layout-flex-2)
+     }
+     .add-button {
+      position: fixed;
+      right: 25px;
+      bottom: 30px;
+    }
+    .login-input{
+        width: 450px;
+      }
+
+    </style>
+
+    <!-- <app-pouchdb-query
+        id="query"
+        db-name="_users"
+        selector="_id $gt 0"
+        fields='["_id", "name", "roles"]'
+        sort='["_id"]'
+        data="{{users}}">
+    </app-pouchdb-query> -->
+
+    <app-pouchdb-confict-resolution
+        strategy="lastWriteWins">
+    </app-pouchdb-conflict-resolution>
+
+    <!-- <app-pouchdb-document
+        id="document"
+        doc-id = "[[curtaskID]]"
+        db-name="tasks"
+        data="{{curtask}}">
+    </app-pouchdb-document> -->
+
+    <!-- <app-pouchdb-sync
+      src='http://patrick:password@localhost:5984/_users'
+      target="_users"
+      bidirectional>
+    </app-pouchdb-sync> -->
+
+    <paper-toast id="toast" text="User has been created"></paper-toast>
+
+    <paper-dialog id="addUserDialog" modal>
+    <paper-input id="username" class="login-input" label="Login" value={{username}} on-keydown="checkForEnterAddUser"></paper-input>
+    <paper-input id="password" class="login-input" label="Password" value={{password}} on-keydown="checkForEnterAddUser"></paper-input>
+      <div class="buttons">
+        <paper-button on-click="dialogCancelClick">cancel</paper-button>
+        <paper-button on-click="dialogAddUserClick">add user</paper-button>
+      </div>
+    </paper-dialog>
+
+
+
+    <div class="users-title">
+      <div class="name-title">NAME</div>
+      <div class="name-title">ROLES</div>
+    </div>
+
+    <iron-list id="list" items="{{users}}" as="item">
+     <template>
+       <div class="item">
+         <div class="name">[[item.name]]</div>
+         <div class="roles">[[item.roles]]</div>
+       </div>
+     </template>
+   </iron-list>
+
+   <paper-fab class="add-button" icon="add" on-click="addUser" title="heart"></paper-fab>
+
+
+  </template>
+  <script type="text/javascript" src="bower_components/pouchdb-authentication/dist/pouchdb.authentication.min.js"></script>
+  <script>
+    Polymer({
+      is: "users-page",
+      created: function(e) {
+        console.log("created");
+      },
+      ready: function(e) {
+        this.users = [
+          {
+            _id: "1",
+            name: "artem",
+            roles: ["admin"]
+          },
+          {
+            _id: "2",
+            name: "pavlo",
+            roles: ["admin", "driver"]
+          }
+        ]
+      },
+      addUser: function(e) {
+        this.$.addUserDialog.open()
+      },
+      dialogCancelClick: function(e) {
+        this.$.addUserDialog.close()
+      },
+      dialogAddUserClick: function(e) {
+        var db = new PouchDB('http://localhost:5984/tasks', {skipSetup: true});
+        if ((this.password.length > 0) && (this.username.length > 0)) {
+          var that = this;
+          db.signup(this.username, this.password, function (err, response) {
+            if (response) {
+              that.$.toast.show();
+              that.$.addUserDialog.close();
+            }
+          });
+        }
+      },
+      checkForEnterAddUser: function(e) {
+        if (e.keyCode == 13) {
+          this.dialogAddUserClick();
+        }
+      }
+    })
+  </script>
+
+</dom-module>
